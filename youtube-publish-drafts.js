@@ -2,43 +2,60 @@
     // -----------------------------------------------------------------
     // CONFIG (you're safe to edit this)
     // -----------------------------------------------------------------
-    const MADE_FOR_KIDS = false; // true / false;
+    // ~ GLOBAL CONFIG
+    // -----------------------------------------------------------------
+    const MODE = 'publish_drafts'; // 'publish_drafts' / 'sort_playlist';
     const DEBUG_MODE = true; // true / false, enable for more context
+    // -----------------------------------------------------------------
+    // ~ PUBLISH CONFIG
+    // -----------------------------------------------------------------
+    const MADE_FOR_KIDS = false; // true / false;
     const VISIBILITY = 'Public'; // 'Public' / 'Private' / 'Unlisted'
     // -----------------------------------------------------------------
+    // ~ SORT PLAYLIST CONFIG
+    // -----------------------------------------------------------------
+    const SORTING_KEY = (one, other) => {
+        const numberRegex = /\d+/;
+        const number = (name) => name.match(numberRegex)[0];
+        if (number(one.name) === undefined || number(other.name) === undefined) {
+            return one.name.localeCompare(other.name);
+        }
+        return number(one.name) - number(other.name);
+    };
     // END OF CONFIG (not safe to edit stuff below)
     // -----------------------------------------------------------------
 
-    // INTERNAL CONFIG (edit at own risk)
+    // Art by Joan G. Stark
+    // .'"'.        ___,,,___        .'``.
+    // : (\  `."'"```         ```"'"-'  /) ;
+    //  :  \                         `./  .'
+    //   `.                            :.'
+    //     /        _         _        \
+    //    |         0}       {0         |
+    //    |         /         \         |
+    //    |        /           \        |
+    //    |       /             \       |
+    //     \     |      .-.      |     /
+    //      `.   | . . /   \ . . |   .'
+    //        `-._\.'.(     ).'./_.-'
+    //            `\'  `._.'  '/'
+    //              `. --'-- .'
+    //                `-...-'
+
+
+
     // ----------------------------------
+    // COMMON  STUFF
+    // ---------------------------------
     const TIMEOUT_STEP_MS = 20;
     const DEFAULT_ELEMENT_TIMEOUT_MS = 10000;
-    const VISIBILITY_PUBLISH_ORDER = {
-        'Private': 0,
-        'Unlisted': 1,
-        'Public': 2,
-    };
-
-    // SELECTORS
-    // ---------
-    const VIDEO_ROW_SELECTOR = 'ytcp-video-row';
-    const DRAFT_MODAL_SELECTOR = '.style-scope.ytcp-uploads-dialog';
-    const DRAFT_BUTTON_SELECTOR = '.edit-draft-button';
-    const MADE_FOR_KIDS_SELECTOR = '#made-for-kids-group';
-    const RADIO_BUTTON_SELECTOR = 'paper-radio-button';
-    const VISIBILITY_STEPPER_SELECTOR = '#step-badge-2';
-    const VISIBILITY_PAPER_BUTTONS_SELECTOR = 'paper-radio-group';
-    const SAVE_BUTTON_SELECTOR = '#done-button';
-    const SUCCESS_ELEMENT_SELECTOR = 'ytcp-video-thumbnail-with-info';
-    const DIALOG_SELECTOR = 'ytcp-dialog.ytcp-video-share-dialog > paper-dialog:nth-child(1)';
-    const DIALOG_CLOSE_BUTTON_SELECTOR = 'iron-icon';
-
     function debugLog(...args) {
-        if (!DEBUG_MODE) { return; }
+        if (!DEBUG_MODE) {
+            return;
+        }
         console.debug(...args);
     }
-
-    const sleep = (ms) => new Promise((resolve, reject) => setTimeout(resolve, ms));
+    const sleep = (ms) => new Promise((resolve, _) => setTimeout(resolve, ms));
 
     async function waitForElement(selector, baseEl, timeoutMs) {
         if (timeoutMs === undefined) {
@@ -67,6 +84,29 @@
         element.click();
         debugLog(element, 'clicked');
     }
+
+    // ----------------------------------
+    // PUBLISH STUFF
+    // ----------------------------------
+    const VISIBILITY_PUBLISH_ORDER = {
+        'Private': 0,
+        'Unlisted': 1,
+        'Public': 2,
+    };
+
+    // SELECTORS
+    // ---------
+    const VIDEO_ROW_SELECTOR = 'ytcp-video-row';
+    const DRAFT_MODAL_SELECTOR = '.style-scope.ytcp-uploads-dialog';
+    const DRAFT_BUTTON_SELECTOR = '.edit-draft-button';
+    const MADE_FOR_KIDS_SELECTOR = '#made-for-kids-group';
+    const RADIO_BUTTON_SELECTOR = 'paper-radio-button';
+    const VISIBILITY_STEPPER_SELECTOR = '#step-badge-2';
+    const VISIBILITY_PAPER_BUTTONS_SELECTOR = 'paper-radio-group';
+    const SAVE_BUTTON_SELECTOR = '#done-button';
+    const SUCCESS_ELEMENT_SELECTOR = 'ytcp-video-thumbnail-with-info';
+    const DIALOG_SELECTOR = 'ytcp-dialog.ytcp-video-share-dialog > paper-dialog:nth-child(1)';
+    const DIALOG_CLOSE_BUTTON_SELECTOR = 'iron-icon';
 
     class SuccessDialog {
         constructor(raw) {
@@ -190,14 +230,16 @@
         return editable;
     }
 
-    async function main() {
+    async function publishDrafts() {
         const videos = await editableVideos();
         debugLog(`found ${videos.length} videos`);
         debugLog('starting in 1000ms');
         await sleep(1000);
         for (let video of videos) {
             const draft = await video.openDraft();
-            debugLog({ draft });
+            debugLog({
+                draft
+            });
             await draft.selectMadeForKids();
             const visibility = await draft.goToVisibility();
             await visibility.setVisibility();
@@ -207,6 +249,91 @@
         }
     }
 
-    main();
+    // ----------------------------------
+    // SORTING STUFF
+    // ----------------------------------
+    const SORTING_MENU_BUTTON_SELECTOR = 'button';
+    const SORTING_ITEM_MENU_SELECTOR = 'paper-listbox#items';
+    const SORTING_ITEM_MENU_ITEM_SELECTOR = 'ytd-menu-service-item-renderer';
+    const MOVE_TO_TOP_INDEX = 4;
+    const MOVE_TO_BOTTOM_INDEX = 5;
+
+    class SortingDialog {
+        constructor(raw) {
+            this.raw = raw;
+        }
+
+        async anyMenuItem() {
+            const item =  await waitForElement(SORTING_ITEM_MENU_ITEM_SELECTOR, this.raw);
+            if (item === null) {
+                throw new Error("could not locate any menu item");
+            }
+            return item;
+        }
+
+        menuItems() {
+            return [...this.raw.querySelectorAll(SORTING_ITEM_MENU_ITEM_SELECTOR)];
+        }
+
+        async moveToTop() {
+            click(this.menuItems()[MOVE_TO_TOP_INDEX]);
+        }
+
+        async moveToBottom() {
+            click(this.menuItems()[MOVE_TO_BOTTOM_INDEX]);
+        }
+    }
+    class PlaylistVideo {
+        constructor(raw) {
+            this.raw = raw;
+        }
+        get name() {
+            return this.raw.querySelector('#video-title').textContent;
+        }
+        async dialog() {
+            return this.raw.querySelector(SORTING_MENU_BUTTON_SELECTOR);
+        }
+
+        async openDialog() {
+            click(await this.dialog());
+            const dialog = new SortingDialog(await waitForElement(SORTING_ITEM_MENU_SELECTOR));
+            await dialog.anyMenuItem();
+            return dialog;
+        }
+
+    }
+    async function playlistVideos() {
+        return [...document.querySelectorAll('ytd-playlist-video-renderer')]
+            .map((el) => new PlaylistVideo(el));
+    }
+    async function sortPlaylist() {
+        debugLog('sorting playlist');
+        const videos = await playlistVideos();
+        debugLog(`found ${videos.length} videos`);
+        videos.sort(SORTING_KEY);
+        const videoNames = videos.map((v) => v.name);
+
+        let index = 1;
+        for (let name of videoNames) {
+            debugLog({index, name});
+            const video = videos.find((v) => v.name === name);
+            const dialog = await video.openDialog();
+            await dialog.moveToBottom();
+            await sleep(1000);
+            index += 1;
+        }
+
+    }
+
+
+    // ----------------------------------
+    // ENTRY POINT
+    // ----------------------------------
+    ({
+        'publish_drafts': publishDrafts,
+        'sort_playlist': sortPlaylist,
+    })[MODE]();
+
+
 })();
 
