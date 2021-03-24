@@ -100,13 +100,13 @@
     const DRAFT_MODAL_SELECTOR = '.style-scope.ytcp-uploads-dialog';
     const DRAFT_BUTTON_SELECTOR = '.edit-draft-button';
     const MADE_FOR_KIDS_SELECTOR = '#made-for-kids-group';
-    const RADIO_BUTTON_SELECTOR = 'paper-radio-button';
-    const VISIBILITY_STEPPER_SELECTOR = '#step-badge-2';
-    const VISIBILITY_PAPER_BUTTONS_SELECTOR = 'paper-radio-group';
+    const RADIO_BUTTON_SELECTOR = 'tp-yt-paper-radio-button';
+    const VISIBILITY_STEPPER_SELECTOR = '#step-badge-3';
+    const VISIBILITY_PAPER_BUTTONS_SELECTOR = 'tp-yt-paper-radio-group';
     const SAVE_BUTTON_SELECTOR = '#done-button';
     const SUCCESS_ELEMENT_SELECTOR = 'ytcp-video-thumbnail-with-info';
-    const DIALOG_SELECTOR = 'ytcp-dialog.ytcp-video-share-dialog > paper-dialog:nth-child(1)';
-    const DIALOG_CLOSE_BUTTON_SELECTOR = 'iron-icon';
+    const DIALOG_SELECTOR = 'ytcp-dialog.ytcp-video-share-dialog > tp-yt-paper-dialog:nth-child(1)';
+    const DIALOG_CLOSE_BUTTON_SELECTOR = 'tp-yt-iron-icon';
 
     class SuccessDialog {
         constructor(raw) {
