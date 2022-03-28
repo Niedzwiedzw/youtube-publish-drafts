@@ -181,7 +181,7 @@
         async selectMadeForKids() {
             click(await this.madeForKidsPaperButton());
             await sleep(50);
-            debugLog('"Made for kids" set as ${MADE_FOR_KIDS}');
+            debugLog(`"Made for kids" set as ${MADE_FOR_KIDS}`);
         }
 
         async visibilityStepper() {
