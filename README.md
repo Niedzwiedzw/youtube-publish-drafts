@@ -1,4 +1,9 @@
 # youtube-publish-drafts
+
+## help
+to get help join our discord server https://discord.gg/xj6JxW8k
+
+## about
 Publish all your draft videos without clicking by using javascript
 ![quick demo](youtube-publisher-demo.gif)
 
