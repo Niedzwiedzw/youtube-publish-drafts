@@ -15,12 +15,7 @@
     // ~ SORT PLAYLIST CONFIG
     // -----------------------------------------------------------------
     const SORTING_KEY = (one, other) => {
-        const numberRegex = /\d+/;
-        const number = (name) => name.match(numberRegex)[0];
-        if (number(one.name) === undefined || number(other.name) === undefined) {
-            return one.name.localeCompare(other.name);
-        }
-        return number(one.name) - number(other.name);
+        return one.name.localeCompare(other.name, undefined, {numeric: true, sensitivity: 'base'});
     };
     // END OF CONFIG (not safe to edit stuff below)
     // -----------------------------------------------------------------
@@ -253,7 +248,7 @@
     // SORTING STUFF
     // ----------------------------------
     const SORTING_MENU_BUTTON_SELECTOR = 'button';
-    const SORTING_ITEM_MENU_SELECTOR = 'paper-listbox#items';
+    const SORTING_ITEM_MENU_SELECTOR = 'tp-yt-paper-listbox#items';
     const SORTING_ITEM_MENU_ITEM_SELECTOR = 'ytd-menu-service-item-renderer';
     const MOVE_TO_TOP_INDEX = 4;
     const MOVE_TO_BOTTOM_INDEX = 5;
